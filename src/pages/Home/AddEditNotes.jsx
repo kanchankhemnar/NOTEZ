@@ -5,6 +5,8 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import TagInput from "../../components/Input/TagInput";
 import { MdClose } from "react-icons/md";
+import axiosInstance from "../../utils/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const validationSchema = Yup.object({
   title: Yup.string()
@@ -15,43 +17,93 @@ const validationSchema = Yup.object({
     .required("Content is required"),
 });
 
-const AddEditNotes = ({ noteData, type, onClose }) => {
+const AddEditNotes = ({ noteData, type, onClose, getAllNotes }) => {
   const [tags, setTags] = useState([]);
+  const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   const formik = useFormik({
     initialValues: {
-      title: "",
-      content: "",
+      title: noteData?.title || "",
+      content: noteData?.content || "",
     },
     validationSchema: validationSchema,
-    onSubmit: (values, { resetForm }) => {
-      alert("Todo added");
-
-      resetForm();
-      setTags([]);
+    onSubmit: async (values, { resetForm }) => {
+      try {
+        if (type === "edit") {
+          await editNote(values);
+        } else {
+          await addNewNote(values);
+        }
+        getAllNotes();
+        onClose();
+        resetForm();
+        setTags([]);
+        navigate("/dashboard");
+      } catch (err) {
+        console.error(err);
+      }
     },
   });
 
   const handleTitleChange = (e) => {
-    const newTitle = e.target.value;
     formik.handleChange(e);
-
+    const newTitle = e.target.value;
     const newTags = newTitle
       .split(/\s+/)
       .filter((word) => word.length > 2 && word !== "are" && word !== "the");
     setTags(newTags);
   };
-  //add note
-  const addNewNote = async () => {};
 
-  //edit note
-  const editNote = async () => {};
+  const addNewNote = async ({ title, content }) => {
+    try {
+      const response = await axiosInstance.post("/add-note", {
+        title,
+        content,
+        tags,
+      });
 
-  const handleAddNote = () => {
-    if (type === "edit") {
-      editNote();
-    } else {
-      addNewNote();
+      if (response.data && response.data.note) {
+        getAllNotes();
+        onClose();
+      }
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        setError(error.response.data.message);
+      }
+    }
+  };
+
+  const editNote = async ({ title, content }) => {
+    // Edit note logic here
+    const noteId = noteData._id;
+    const newTags = title
+      .split(/\s+/)
+      .filter((word) => word.length > 2 && word !== "are" && word !== "the");
+    setTags(newTags);
+    try {
+      const response = await axiosInstance.put("/edit-note/" + noteId, {
+        title,
+        content,
+        tags,
+      });
+
+      if (response.data && response.data.note) {
+        getAllNotes();
+        onClose();
+      }
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        setError(error.response.data.message);
+      }
     }
   };
 
@@ -99,12 +151,8 @@ const AddEditNotes = ({ noteData, type, onClose }) => {
           <TagInput tags={tags} />
         </div>
 
-        <button
-          className="btn-primary font-medium mt-5 p-3"
-          type="submit"
-          onClick={handleAddNote}
-        >
-          ADD
+        <button className="btn-primary font-medium mt-5 p-3" type="submit">
+          {type === "edit" ? "EDIT" : "ADD"}
         </button>
       </form>
     </div>

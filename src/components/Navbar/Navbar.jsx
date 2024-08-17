@@ -1,13 +1,15 @@
+/* eslint-disable react/prop-types */
 /* eslint-disable no-unused-vars */
 import React, { useState } from "react";
 import ProfileInfo from "../Cards/ProfileInfo";
 import {Link, useNavigate } from "react-router-dom";
 import SearchBar from "../SearchBar/SearchBar";
-const Navbar = () => {
+const Navbar = ({userInfo}) => {
 const [searchQuery,setSearchQuery] =useState("");
 
 const navigate = useNavigate();
   const onLogout = () =>{
+    localStorage.clear();
       navigate("/login");
   };
 
@@ -33,7 +35,7 @@ const navigate = useNavigate();
           onClearSearch={onClearSearch}
         />
 
-        <ProfileInfo onLogout={onLogout} />
+        <ProfileInfo onLogout={onLogout} userInfo={userInfo} />
       </div>
     </>
   );

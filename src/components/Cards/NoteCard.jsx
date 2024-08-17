@@ -6,10 +6,10 @@ import { MdOutlineCheckBoxOutlineBlank } from "react-icons/md";
 import { MdCreate,MdDelete } from "react-icons/md";
 import { BiCheckboxChecked } from "react-icons/bi";
 const NoteCard = ({
+  
   title,
   date,
   content,
-  tags,
   isPinned,
   onEdit,
   onDelete,
@@ -29,8 +29,6 @@ const NoteCard = ({
 
         <p className="text-xs text-slate-600 mt-2">{content?.slice(0, 60)}</p>
         <div className="flex items-center justify-between mt-2">
-          <div className="text-xs text-slate-500">{tags}</div>
-
           <div className="flex items-center gap-2 ">
             <MdCreate
               className="icon-btn hover:text-green-600 cursor-pointer"
