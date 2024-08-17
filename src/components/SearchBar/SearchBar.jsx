@@ -17,7 +17,7 @@ const SearchBar = ({value,onChange,handleSearch,onClearSearch}) => {
         {value && <IoMdClose className="mr-1 text-xl text-slate-500 cursor-pointer hover:text-black"  onClick={onClearSearch} /> }
         
         <FaMagnifyingGlass
-          className="text-slate-400 cursor-pointer hover:text-black"
+          className="text-slate-400"
           onClick={handleSearch}
         />
       </div>

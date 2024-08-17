@@ -17,7 +17,13 @@ const validationSchema = Yup.object({
     .required("Content is required"),
 });
 
-const AddEditNotes = ({ noteData, type, onClose, getAllNotes }) => {
+const AddEditNotes = ({
+  noteData,
+  type,
+  onClose,
+  getAllNotes,
+  showToastMessage,
+}) => {
   const [tags, setTags] = useState([]);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
@@ -64,6 +70,7 @@ const AddEditNotes = ({ noteData, type, onClose, getAllNotes }) => {
       });
 
       if (response.data && response.data.note) {
+        showToastMessage("Todo added successfully");
         getAllNotes();
         onClose();
       }
@@ -93,6 +100,7 @@ const AddEditNotes = ({ noteData, type, onClose, getAllNotes }) => {
       });
 
       if (response.data && response.data.note) {
+        showToastMessage("Todo updated successfully");
         getAllNotes();
         onClose();
       }

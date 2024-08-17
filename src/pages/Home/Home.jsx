@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-unused-vars */
 import React, { useEffect, useState } from "react";
 import Navbar from "../../components/Navbar/Navbar";
@@ -8,6 +9,7 @@ import Modal from "react-modal";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../../utils/axiosInstance";
 import moment from "moment";
+import Toast from "../../components/ToastMessage/Toast";
 
 const Home = () => {
   const [openAddEditModal, setOpenAddEditModal] = useState({
@@ -16,21 +18,31 @@ const Home = () => {
     data: null,
   });
 
+  const [showToastMsg, setShowToastMsg] = useState({
+    isShown: false,
+    message: "",
+    type: "add",
+  });
+
+  const [isSearch, setIsSearch] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
   const [userInfo, setUserInfo] = useState(null);
   const [allNotes, setAllNotes] = useState([]);
 
   const navigate = useNavigate();
 
-  const handleEdit = (noteDetails)=>{
-    setOpenAddEditModal({isShown:true , data:noteDetails ,type:"edit"});
+  const handleEdit = (noteDetails) => {
+    setOpenAddEditModal({ isShown: true, data: noteDetails, type: "edit" });
   };
-  //get user info
 
+  // get user info
   const getUserInfo = async () => {
     try {
       const response = await axiosInstance.get("/get-user");
       if (response.data && response.data.user) {
         setUserInfo(response.data.user);
+        setIsAuthenticated(true); // Set to true if user is authenticated
       }
     } catch (error) {
       if (error.response.status === 401) {
@@ -40,7 +52,31 @@ const Home = () => {
     }
   };
 
-  //Get all notes
+  const showToastMessage = (message, type) => {
+    setShowToastMsg({
+      isShown: true,
+      message,
+      type,
+    });
+
+    setTimeout(() => {
+      setShowToastMsg({
+        isShown: false,
+        message: "",
+        type: "",
+      });
+    }, 3000);
+  };
+
+  const handleCloseToast = () => {
+    setShowToastMsg({
+      isShown: false,
+      message: "",
+      type: "",
+    });
+  };
+
+  // Get all notes
   const getAllNotes = async () => {
     try {
       const response = await axiosInstance.get("/get-all-notes");
@@ -53,6 +89,48 @@ const Home = () => {
     }
   };
 
+  // Delete Note
+  const deleteNote = async (data) => {
+    try {
+      const response = await axiosInstance.delete("/delete-note/" + data._id);
+
+      if (response.data && !response.data.error) {
+        showToastMessage("Todo deleted successfully", "delete");
+      }
+      getAllNotes();
+    } catch (error) {
+      if (
+        error.response &&
+        error.response.data &&
+        error.response.data.message
+      ) {
+        console.log("unexpected error occured");
+      }
+    }
+  };
+
+  // Search for note
+  const onSearchNote = async (query) => {
+    try {
+      console.log("Searching for query:", query); // Debugging line
+      const response = await axiosInstance.get("/search-notes", {
+        params: { query },
+      });
+
+      if (response.data && response.data.notes) {
+        setIsSearch(true);
+        setAllNotes(response.data.notes);
+      } else {
+        // Handle case when no notes are found
+        setAllNotes([]);
+        console.log("No notes found for this query");
+      }
+    } catch (error) {
+      console.error("Error while searching for notes:", error);
+      setAllNotes([]); // Clear notes if there's an error
+    }
+  };
+
   useEffect(() => {
     getAllNotes();
     getUserInfo();
@@ -61,26 +139,36 @@ const Home = () => {
 
   return (
     <>
-      <Navbar userInfo={userInfo} />
+      <Navbar
+        userInfo={userInfo}
+        onSearchNote={isAuthenticated ? onSearchNote : null}
+        getAllNotes={getAllNotes}
+      />
       <div className="container mx-auto">
-        <div className="grid grid-cols-2 gap-4 mt-8">
-         
-          {allNotes.map((item) => {
-            
-            return (
-              <NoteCard
-                key={item._id}
-                title={item.title}
-                date={moment(item.createdOn).format("DD/MM/YYYY")}
-                content={item.content}
-                isPinned={item.isPinned}
-                onEdit={() => handleEdit(item)}
-                onDelete={() => {}}
-                onPinNote={() => {}}
-              />
-            );
-          })}
-        </div>
+        {allNotes.length > 0 ? (
+          <div className="grid grid-cols-2 gap-4 mt-8">
+            {allNotes.map((item) => {
+              return (
+                <NoteCard
+                  key={item._id}
+                  title={item.title}
+                  date={moment(item.createdOn).format("DD/MM/YYYY")}
+                  content={item.content}
+                  isPinned={item.isPinned}
+                  onEdit={() => handleEdit(item)}
+                  onDelete={() => deleteNote(item)}
+                  onPinNote={() => {}}
+                />
+              );
+            })}
+          </div>
+        ) : (
+          <div className="flex justify-center items-center h-full text-slate-400 mt-10 text-3xl">
+            <h1>
+              <pre>No Todos to show!! Add below </pre>
+            </h1>
+          </div>
+        )}
       </div>
       <button
         className="w-16 h-16 flex items-center justify-center rounded-full bg-primary hover:bg-blue-600 absolute right-10 bottom-10"
@@ -93,7 +181,7 @@ const Home = () => {
 
       <Modal
         isOpen={openAddEditModal.isShown}
-        oneRequestClose={() =>
+        onRequestClose={() =>
           setOpenAddEditModal({ isShown: false, type: "add", data: null })
         }
         style={{
@@ -110,10 +198,19 @@ const Home = () => {
           onClose={() => {
             setOpenAddEditModal({ isShown: false, type: "add", data: null });
           }}
-          getAllNotes = {getAllNotes}
+          getAllNotes={getAllNotes}
+          showToastMessage={showToastMessage}
         />
       </Modal>
+
+      <Toast
+        isShown={showToastMsg.isShown}
+        message={showToastMsg.message}
+        type={showToastMsg.type}
+        onClose={handleCloseToast}
+      />
     </>
   );
 };
+
 export default Home;
