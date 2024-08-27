@@ -70,7 +70,7 @@ const AddEditNotes = ({
       });
 
       if (response.data && response.data.note) {
-        showToastMessage("Todo added successfully");
+        showToastMessage("Note added successfully");
         getAllNotes();
         onClose();
       }
@@ -100,7 +100,7 @@ const AddEditNotes = ({
       });
 
       if (response.data && response.data.note) {
-        showToastMessage("Todo updated successfully");
+        showToastMessage("Note updated successfully");
         getAllNotes();
         onClose();
       }

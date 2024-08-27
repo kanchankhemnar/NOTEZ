@@ -40,7 +40,7 @@ const Navbar = ({ userInfo, onSearchNote, getAllNotes }) => {
     <>
       <div className="bg-white flex items-center justify-between px-6 py-2 drop-shadow">
         <Link to={"/dashboard"}>
-          <h2 className="text-xl font-medium text-black py-2">TODO</h2>
+          <h2 className="text-xl font-medium text-black py-2">NOTE</h2>
         </Link>
 
         {onSearchNote && ( // Render the search bar only if onSearchNote is provided

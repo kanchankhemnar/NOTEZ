@@ -95,7 +95,7 @@ const Home = () => {
       const response = await axiosInstance.delete("/delete-note/" + data._id);
 
       if (response.data && !response.data.error) {
-        showToastMessage("Todo deleted successfully", "delete");
+        showToastMessage("Note deleted successfully", "delete");
       }
       getAllNotes();
     } catch (error) {
@@ -143,7 +143,7 @@ const Home = () => {
       );
 
       if (response.data && response.data.note) {
-        showToastMessage("Todo updated successfully");
+        showToastMessage("Note updated successfully");
         getAllNotes();
       }
     } catch (error) {
@@ -185,7 +185,7 @@ const Home = () => {
         ) : (
           <div className="flex justify-center items-center h-full text-slate-400 mt-10 text-3xl">
             <h1>
-              <pre>No Todos to show!! Add below </pre>
+              <pre>No notes to show!! Add below </pre>
             </h1>
           </div>
         )}
